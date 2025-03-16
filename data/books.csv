@@ -1,0 +1,6 @@
+id,title,author,genre,owner,price,publication_date
+1,The Art of Programming,John Doe,Technology,client1,29.99,2020-03-15
+2,Data Science Fundamentals,Jane Smith,Technology,client1,24.99,2021-07-22
+3,Business Strategy,Robert Johnson,Business,client2,19.99,2019-11-08
+4,Marketing 101,Emily Williams,Marketing,client2,14.99,2022-01-30
+5,Leadership Principles,Michael Brown,Business,client2,22.99,2020-09-12
