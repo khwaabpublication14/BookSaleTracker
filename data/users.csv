@@ -1,0 +1,4 @@
+username,password,role,name
+admin,240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9,admin,Administrator
+client1,186474c1f2c2f735a54c2cf82ee8e87f2a5cd30940e280029363fecedfc5328c,client,John Smith
+client2,186474c1f2c2f735a54c2cf82ee8e87f2a5cd30940e280029363fecedfc5328c,client,Emily Johnson

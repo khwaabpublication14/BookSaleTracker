@@ -19,7 +19,8 @@ def initialize_users():
                 hash_password('client123')
             ],
             'role': ['admin', 'client', 'client'],
-            'name': ['Administrator', 'John Smith', 'Emily Johnson']
+            'name': ['Administrator', 'John Smith', 'Emily Johnson'],
+            'email': ['admin@example.com', 'john@example.com', 'emily@example.com']
         }
         
         users_df = pd.DataFrame(users_data)
@@ -81,6 +82,92 @@ def logout():
     st.session_state.username = None
     st.session_state.name = None
     st.rerun()
+
+def add_user(username, password, name, role, email=''):
+    """Add a new user to the system."""
+    users_df = initialize_users()
+    
+    # Check if username already exists
+    if username in users_df['username'].values:
+        return False, "Username already exists."
+    
+    # Create new user entry
+    new_user = pd.DataFrame({
+        'username': [username],
+        'password': [hash_password(password)],
+        'role': [role],
+        'name': [name],
+        'email': [email]
+    })
+    
+    # Append to existing users
+    updated_users = pd.concat([users_df, new_user], ignore_index=True)
+    updated_users.to_csv('data/users.csv', index=False)
+    
+    return True, "User created successfully!"
+
+def update_user(username, name=None, email=None, role=None):
+    """Update an existing user's information."""
+    users_df = initialize_users()
+    
+    # Check if user exists
+    if username not in users_df['username'].values:
+        return False, "User does not exist."
+    
+    # Get user index
+    user_idx = users_df[users_df['username'] == username].index[0]
+    
+    # Update fields if provided
+    if name:
+        users_df.loc[user_idx, 'name'] = name
+    if email:
+        users_df.loc[user_idx, 'email'] = email
+    if role:
+        users_df.loc[user_idx, 'role'] = role
+    
+    # Save changes
+    users_df.to_csv('data/users.csv', index=False)
+    
+    return True, "User updated successfully!"
+
+def change_password(username, new_password):
+    """Change a user's password."""
+    users_df = initialize_users()
+    
+    # Check if user exists
+    if username not in users_df['username'].values:
+        return False, "User does not exist."
+    
+    # Get user index
+    user_idx = users_df[users_df['username'] == username].index[0]
+    
+    # Update password
+    users_df.loc[user_idx, 'password'] = hash_password(new_password)
+    
+    # Save changes
+    users_df.to_csv('data/users.csv', index=False)
+    
+    return True, "Password changed successfully!"
+
+def delete_user(username):
+    """Delete a user from the system."""
+    users_df = initialize_users()
+    
+    # Check if user exists
+    if username not in users_df['username'].values:
+        return False, "User does not exist."
+    
+    # Don't allow deleting the admin user
+    if username == 'admin':
+        return False, "Cannot delete the admin user."
+    
+    # Remove user
+    users_df = users_df[users_df['username'] != username]
+    
+    # Save changes
+    users_df.to_csv('data/users.csv', index=False)
+    
+    return True, "User deleted successfully!"
 
 def show_user_info():
     """Display current user info in the sidebar."""

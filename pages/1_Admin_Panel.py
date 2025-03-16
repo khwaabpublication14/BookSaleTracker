@@ -345,54 +345,185 @@ with tab2:
 with tab3:
     st.header("User Management")
     
-    # Get all users
-    users_df = data_manager.get_users()
+    # Create subtabs for User Management
+    user_tabs = st.tabs(["All Users", "Add New User", "Edit User", "User Books"])
     
-    if users_df.empty:
-        st.info("No users available in the system.")
-    else:
-        # Display users in a dataframe
-        st.dataframe(
-            users_df,
-            use_container_width=True,
-            column_config={
-                "username": "Username",
-                "role": "Role",
-                "name": "Full Name"
-            }
-        )
+    with user_tabs[0]:
+        # Get all users
+        users_df = data_manager.get_users()
         
-        # User-specific book assignment view
+        if users_df.empty:
+            st.info("No users available in the system.")
+        else:
+            # Display users in a dataframe
+            st.dataframe(
+                users_df,
+                use_container_width=True,
+                column_config={
+                    "username": "Username",
+                    "role": "Role",
+                    "name": "Full Name",
+                    "email": "Email"
+                }
+            )
+    
+    with user_tabs[1]:
+        st.subheader("Add New User")
+        
+        # Form for adding a new user
+        with st.form("add_user_form"):
+            new_username = st.text_input("Username")
+            new_password = st.text_input("Password", type="password")
+            confirm_password = st.text_input("Confirm Password", type="password")
+            new_name = st.text_input("Full Name")
+            new_email = st.text_input("Email")
+            new_role = st.selectbox("Role", ["client", "admin"])
+            
+            submit_button = st.form_submit_button("Add User")
+            
+            if submit_button:
+                if not new_username or not new_password or not new_name:
+                    st.error("Please fill out all required fields.")
+                elif new_password != confirm_password:
+                    st.error("Passwords do not match.")
+                else:
+                    # Call the add_user function from auth.py
+                    import auth
+                    success, message = auth.add_user(
+                        username=new_username,
+                        password=new_password,
+                        name=new_name,
+                        role=new_role,
+                        email=new_email
+                    )
+                    
+                    if success:
+                        st.success(message)
+                    else:
+                        st.error(message)
+    
+    with user_tabs[2]:
+        st.subheader("Edit User")
+        
+        # Get all users for selection
+        users_df = data_manager.get_users()
+        
+        if users_df.empty:
+            st.info("No users available to edit.")
+        else:
+            # Select a user to edit
+            usernames = users_df['username'].tolist()
+            selected_username = st.selectbox("Select User to Edit", usernames)
+            
+            # Get selected user's current details
+            selected_user = users_df[users_df['username'] == selected_username].iloc[0]
+            
+            # Edit user form
+            with st.form("edit_user_form"):
+                edit_name = st.text_input("Full Name", value=selected_user['name'])
+                
+                # Email field (may not exist in older records)
+                edit_email = ""
+                if 'email' in selected_user:
+                    edit_email = st.text_input("Email", value=selected_user['email'])
+                else:
+                    edit_email = st.text_input("Email")
+                
+                edit_role = st.selectbox("Role", ["client", "admin"], index=0 if selected_user['role'] == "client" else 1)
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    update_button = st.form_submit_button("Update User")
+                with col2:
+                    delete_button = st.form_submit_button("Delete User")
+                
+                if update_button:
+                    import auth
+                    success, message = auth.update_user(
+                        username=selected_username,
+                        name=edit_name,
+                        email=edit_email,
+                        role=edit_role
+                    )
+                    
+                    if success:
+                        st.success(message)
+                    else:
+                        st.error(message)
+                
+                if delete_button:
+                    import auth
+                    success, message = auth.delete_user(selected_username)
+                    
+                    if success:
+                        st.success(message)
+                        st.rerun()
+                    else:
+                        st.error(message)
+            
+            # Change password section
+            st.subheader("Change Password")
+            
+            with st.form("change_password_form"):
+                new_password = st.text_input("New Password", type="password")
+                confirm_password = st.text_input("Confirm New Password", type="password")
+                
+                password_button = st.form_submit_button("Change Password")
+                
+                if password_button:
+                    if not new_password:
+                        st.error("Please enter a new password.")
+                    elif new_password != confirm_password:
+                        st.error("Passwords do not match.")
+                    else:
+                        import auth
+                        success, message = auth.change_password(
+                            username=selected_username,
+                            new_password=new_password
+                        )
+                        
+                        if success:
+                            st.success(message)
+                        else:
+                            st.error(message)
+    
+    with user_tabs[3]:
         st.subheader("User Books")
         
-        # Select a user to view their books
+        # Get users with client role
+        users_df = data_manager.get_users()
         client_options = users_df[users_df['role'] == 'client']['username'].tolist()
-        selected_client = st.selectbox("Select Client", client_options)
         
-        if selected_client:
-            client_books = data_manager.get_user_books(selected_client)
+        if not client_options:
+            st.info("No client users available.")
+        else:
+            # Select a user to view their books
+            selected_client = st.selectbox("Select Client", client_options)
             
-            if client_books.empty:
-                st.info(f"No books assigned to {selected_client}.")
-            else:
-                st.dataframe(
-                    client_books,
-                    use_container_width=True,
-                    column_config={
-                        "id": "ID",
-                        "title": "Title",
-                        "author": "Author",
-                        "genre": "Genre",
-                        "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-                        "publication_date": "Publication Date"
-                    }
-                )
+            if selected_client:
+                client_books = data_manager.get_user_books(selected_client)
                 
-                # User sales summary
-                user_sales = data_manager.get_user_sales(selected_client)
-                
-                if not user_sales.empty:
-                    total_books_sold = user_sales['quantity'].sum()
-                    total_revenue = user_sales['revenue'].sum()
+                if client_books.empty:
+                    st.info(f"No books assigned to {selected_client}.")
+                else:
+                    st.dataframe(
+                        client_books,
+                        use_container_width=True,
+                        column_config={
+                            "id": "ID",
+                            "title": "Title",
+                            "author": "Author",
+                            "genre": "Genre",
+                            "price": st.column_config.NumberColumn("Price", format="$%.2f"),
+                            "publication_date": "Publication Date"
+                        }
+                    )
                     
-                    st.info(f"Total Books Sold: {total_books_sold} | Total Revenue: ${total_revenue:.2f}")
+                    # User sales summary
+                    user_sales = data_manager.get_user_sales(selected_client)
+                    
+                    if not user_sales.empty:
+                        total_books_sold = user_sales['quantity'].sum()
+                        total_revenue = user_sales['revenue'].sum()
+                        
+                        st.info(f"Total Books Sold: {total_books_sold} | Total Revenue: ${total_revenue:.2f}")
