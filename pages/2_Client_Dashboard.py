@@ -240,24 +240,32 @@ else:
     # Royalties by Book Section
     st.subheader("Royalties by Book")
     
-    # Get royalties by book
-    royalties_by_book = data_manager.get_royalties_by_book(username, time_period)
-    
-    if not royalties_by_book.empty:
-        fig = px.bar(
-            royalties_by_book,
-            y='title',
-            x='royalties',
-            title='Royalties Earned by Book',
-            labels={'title': 'Book Title', 'royalties': 'Royalties Earned'},
-            color='royalties',
-            color_continuous_scale=px.colors.sequential.Greens,
-            orientation='h'
-        )
-        fig.update_layout(height=400, yaxis={'categoryorder': 'total ascending'})
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("No royalty data available for the selected filters.")
+    try:
+        # Get royalties by book
+        royalties_by_book = data_manager.get_royalties_by_book(username, time_period)
+        
+        # Check if dataframe contains the necessary columns
+        required_cols = ['title', 'royalties']
+        has_required_cols = all(col in royalties_by_book.columns for col in required_cols)
+        
+        if not royalties_by_book.empty and has_required_cols:
+            fig = px.bar(
+                royalties_by_book,
+                y='title',
+                x='royalties',
+                title='Royalties Earned by Book',
+                labels={'title': 'Book Title', 'royalties': 'Royalties Earned'},
+                color='royalties',
+                color_continuous_scale=px.colors.sequential.Greens,
+                orientation='h'
+            )
+            fig.update_layout(height=400, yaxis={'categoryorder': 'total ascending'})
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No royalty data available for the selected filters.")
+    except Exception as e:
+        st.error(f"Error displaying royalties by book: {str(e)}")
+        st.info("We're having trouble loading the royalty data. Please try a different filter.")
     
     # Detailed sales table
     st.subheader("Detailed Sales Data")

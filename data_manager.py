@@ -422,18 +422,40 @@ def get_royalties_by_book(username, time_period="All Time"):
     if sales_df.empty or books_df.empty or 'royalty' not in sales_df.columns:
         return pd.DataFrame(columns=['title', 'royalties'])
     
-    # Merge sales with books to get book titles
-    merged_df = pd.merge(sales_df, books_df[['id', 'title']], 
-                         left_on='book_id', right_on='id')
-    
-    # Group by book title and sum royalties
-    royalties_by_book = merged_df.groupby('title')['royalty'].sum().reset_index()
-    royalties_by_book.columns = ['title', 'royalties']
-    
-    # Sort by royalties in descending order
-    royalties_by_book = royalties_by_book.sort_values('royalties', ascending=False)
-    
-    return royalties_by_book
+    try:
+        # Ensure sales_df has book_id column
+        if 'book_id' not in sales_df.columns:
+            return pd.DataFrame(columns=['title', 'royalties'])
+        
+        # Get only necessary columns from books_df to avoid duplicates
+        books_subset = books_df[['id', 'title']].copy()
+        
+        # Merge sales with books to get book titles
+        merged_df = pd.merge(
+            sales_df, 
+            books_subset, 
+            left_on='book_id', 
+            right_on='id',
+            how='inner'  # Only keep matching rows
+        )
+        
+        # Check if merge was successful and resulted in a dataframe with the required columns
+        if merged_df.empty or 'title' not in merged_df.columns or 'royalty' not in merged_df.columns:
+            return pd.DataFrame(columns=['title', 'royalties'])
+        
+        # Group by book title and sum royalties
+        royalties_by_book = merged_df.groupby('title')['royalty'].sum().reset_index()
+        royalties_by_book.columns = ['title', 'royalties']
+        
+        # Sort by royalties in descending order
+        royalties_by_book = royalties_by_book.sort_values('royalties', ascending=False)
+        
+        return royalties_by_book
+        
+    except Exception as e:
+        # Log the error and return an empty dataframe
+        print(f"Error in get_royalties_by_book: {str(e)}")
+        return pd.DataFrame(columns=['title', 'royalties'])
 
 def get_users():
     """Get all users from the dataset."""
