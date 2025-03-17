@@ -5,6 +5,45 @@ import os
 from datetime import datetime, timedelta
 import utils
 
+def update_sales_royalties():
+    """Update all sales with royalty calculations if they're missing."""
+    if not os.path.exists('data/sales.csv') or not os.path.exists('data/books.csv'):
+        return
+    
+    sales_df = pd.read_csv('data/sales.csv')
+    books_df = pd.read_csv('data/books.csv')
+    
+    # Check if we need to update royalties
+    if 'royalty' not in sales_df.columns or sales_df['royalty'].isna().any():
+        print("Updating royalty values in sales data...")
+        
+        # Make sure royalty_percentage column exists in books
+        if 'royalty_percentage' not in books_df.columns:
+            # Add default royalty percentage if missing
+            books_df['royalty_percentage'] = 10.0
+            books_df.to_csv('data/books.csv', index=False)
+        
+        # Create a dictionary mapping book_id to royalty_percentage
+        royalty_map = dict(zip(books_df['id'], books_df['royalty_percentage']))
+        
+        # Calculate royalty for each sale
+        for idx, row in sales_df.iterrows():
+            book_id = row['book_id']
+            revenue = row['revenue']
+            
+            # Get royalty percentage for this book (default to 10%)
+            royalty_pct = royalty_map.get(book_id, 10.0)
+            
+            # Calculate royalty
+            royalty = revenue * (royalty_pct / 100)
+            
+            # Update the dataframe
+            sales_df.at[idx, 'royalty'] = royalty
+        
+        # Save updated sales data
+        sales_df.to_csv('data/sales.csv', index=False)
+        print("Royalty values updated successfully.")
+
 def initialize_data():
     """Initialize default data if it doesn't exist."""
     if not os.path.exists('data'):
