@@ -51,7 +51,7 @@ def authenticate(username, password):
 
 def show_login_page():
     """Display login form and handle authentication."""
-    st.title("Book Sales Tracker - Login")
+    st.title("Khwaab Publication - Login")
     
     with st.form("login_form"):
         username = st.text_input("Username")
