@@ -132,37 +132,97 @@ else:
             sales_growth = 0
             revenue_growth = 0
 
-    # Display metrics in columns
+    # Custom CSS for gradient cards
+    st.markdown("""
+        <style>
+            .metric-card {
+                background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+                padding: 20px;
+                border-radius: 10px;
+                color: white;
+                margin: 10px 0;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .metric-label {
+                font-size: 0.9rem;
+                font-weight: 500;
+                margin-bottom: 8px;
+                opacity: 0.9;
+            }
+            .metric-value {
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+            .metric-delta {
+                font-size: 0.8rem;
+                margin-top: 8px;
+                opacity: 0.9;
+            }
+            .positive-delta {
+                color: #00ff9f;
+            }
+            .negative-delta {
+                color: #ff4d4d;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Display metrics in columns with custom styling
     col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
-        if comparison != "None":
-            st.metric(
-                "Total Books Sold", 
-                f"{total_sales:,}", 
-                f"{sales_growth:.1f}% {utils.get_performance_indicator(sales_growth)}"
-            )
-        else:
-            st.metric("Total Books Sold", f"{total_sales:,}")
+        delta_html = f"""
+            <div class="metric-delta {'positive-delta' if sales_growth >= 0 else 'negative-delta'}">
+                {sales_growth:.1f}% {utils.get_performance_indicator(sales_growth)}
+            </div>
+        """ if comparison != "None" else ""
+        
+        st.markdown(f"""
+            <div class="metric-card" style="background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%)">
+                <div class="metric-label">Total Books Sold</div>
+                <div class="metric-value">{total_sales:,}</div>
+                {delta_html}
+            </div>
+        """, unsafe_allow_html=True)
 
     with col2:
-        if comparison != "None":
-            st.metric(
-                "Total Revenue", 
-                f"₹{total_revenue:,.2f}", 
-                f"{revenue_growth:.1f}% {utils.get_performance_indicator(revenue_growth)}"
-            )
-        else:
-            st.metric("Total Revenue", f"₹{total_revenue:,.2f}")
+        delta_html = f"""
+            <div class="metric-delta {'positive-delta' if revenue_growth >= 0 else 'negative-delta'}">
+                {revenue_growth:.1f}% {utils.get_performance_indicator(revenue_growth)}
+            </div>
+        """ if comparison != "None" else ""
+        
+        st.markdown(f"""
+            <div class="metric-card" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)">
+                <div class="metric-label">Total Revenue</div>
+                <div class="metric-value">₹{total_revenue:,.2f}</div>
+                {delta_html}
+            </div>
+        """, unsafe_allow_html=True)
 
     with col3:
-        st.metric("Total Royalties", f"₹{total_royalties:,.2f}")
+        st.markdown(f"""
+            <div class="metric-card" style="background: linear-gradient(135deg, #4776E6 0%, #8E54E9 100%)">
+                <div class="metric-label">Total Royalties</div>
+                <div class="metric-value">₹{total_royalties:,.2f}</div>
+            </div>
+        """, unsafe_allow_html=True)
 
     with col4:
-        st.metric("Unique Books Sold", f"{num_books_sold}")
+        st.markdown(f"""
+            <div class="metric-card" style="background: linear-gradient(135deg, #0052D4 0%, #4364F7 100%)">
+                <div class="metric-label">Unique Books Sold</div>
+                <div class="metric-value">{num_books_sold}</div>
+            </div>
+        """, unsafe_allow_html=True)
 
     with col5:
-        st.metric("Average Sale Price", f"₹{avg_sale_price:.2f}")
+        st.markdown(f"""
+            <div class="metric-card" style="background: linear-gradient(135deg, #396afc 0%, #2948ff 100%)">
+                <div class="metric-label">Average Sale Price</div>
+                <div class="metric-value">₹{avg_sale_price:.2f}</div>
+            </div>
+        """, unsafe_allow_html=True)
 
     # Sales trend chart
     st.subheader("Sales Trend")

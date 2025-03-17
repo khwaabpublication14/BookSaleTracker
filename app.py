@@ -76,14 +76,53 @@ else:
             total_revenue = (filtered_data['quantity'] * filtered_data['price']).sum()
             avg_daily_sales = total_sales / utils.get_days_in_period(time_period)
             
-            # Display metrics in columns
+            # Custom CSS for gradient cards
+            st.markdown("""
+                <style>
+                    .metric-card {
+                        background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+                        padding: 20px;
+                        border-radius: 10px;
+                        color: white;
+                        margin: 10px 0;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    }
+                    .metric-label {
+                        font-size: 1rem;
+                        font-weight: 500;
+                        margin-bottom: 8px;
+                        opacity: 0.9;
+                    }
+                    .metric-value {
+                        font-size: 1.8rem;
+                        font-weight: 600;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
+
+            # Display metrics in columns with custom styling
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Total Books Sold", f"{total_sales:,}")
+                st.markdown(f"""
+                    <div class="metric-card" style="background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%)">
+                        <div class="metric-label">Total Books Sold</div>
+                        <div class="metric-value">{total_sales:,}</div>
+                    </div>
+                """, unsafe_allow_html=True)
             with col2:
-                st.metric("Total Revenue", f"₹{total_revenue:,.2f}")
+                st.markdown(f"""
+                    <div class="metric-card" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%)">
+                        <div class="metric-label">Total Revenue</div>
+                        <div class="metric-value">₹{total_revenue:,.2f}</div>
+                    </div>
+                """, unsafe_allow_html=True)
             with col3:
-                st.metric("Avg. Daily Sales", f"{avg_daily_sales:.1f}")
+                st.markdown(f"""
+                    <div class="metric-card" style="background: linear-gradient(135deg, #4776E6 0%, #8E54E9 100%)">
+                        <div class="metric-label">Avg. Daily Sales</div>
+                        <div class="metric-value">{avg_daily_sales:.1f}</div>
+                    </div>
+                """, unsafe_allow_html=True)
             
             # Sales over time chart
             st.subheader("Sales Trend")
