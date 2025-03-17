@@ -4,12 +4,7 @@ from datetime import datetime, timedelta
 import os
 import io
 
-# USD to INR conversion rate (example rate, should be updated regularly in production)
-USD_TO_INR_RATE = 83.0
 
-def convert_usd_to_inr(usd_amount):
-    """Convert USD amount to INR."""
-    return usd_amount * USD_TO_INR_RATE
 
 
 

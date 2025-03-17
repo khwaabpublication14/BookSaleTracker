@@ -76,7 +76,7 @@ with col1:
     st.markdown(f"**Genre:** {selected_book['genre']}")
 
 with col2:
-    st.markdown(f"**Price:** ₹{utils.convert_usd_to_inr(selected_book['price']):.2f}")
+    st.markdown(f"**Price:** ₹{selected_book['price']:.2f}")
     st.markdown(f"**Publication Date:** {selected_book['publication_date']}")
     if 'isbn' in selected_book:
         st.markdown(f"**ISBN:** {selected_book['isbn']}")
@@ -86,11 +86,11 @@ with col3:
     total_revenue = book_sales['revenue'].sum()
     total_royalties = book_sales['royalty'].sum() if 'royalty' in book_sales.columns else 0
     st.markdown(f"**Total Copies Sold:** {total_sold:,}")
-    st.markdown(f"**Total Revenue:** ₹{utils.convert_usd_to_inr(total_revenue):,.2f}")
+    st.markdown(f"**Total Revenue:** ₹{total_revenue:,.2f}")
     if 'royalty_percentage' in selected_book:
         st.markdown(f"**Royalty Rate:** {selected_book['royalty_percentage']}%")
     if 'royalty' in book_sales.columns:
-        st.markdown(f"**Total Royalties Earned:** ₹{utils.convert_usd_to_inr(total_royalties):,.2f}")
+        st.markdown(f"**Total Royalties Earned:** ₹{total_royalties:,.2f}")
 
 # Sales metrics for the selected period
 st.header(f"Sales Metrics ({time_period})")
@@ -147,7 +147,7 @@ else:
     with col2:
         st.metric(
             "Revenue", 
-            f"₹{utils.convert_usd_to_inr(period_total_revenue):,.2f}", 
+            f"₹{period_total_revenue:,.2f}", 
             f"{revenue_growth:.1f}% {utils.get_performance_indicator(revenue_growth)}"
         )
 
@@ -155,7 +155,7 @@ else:
         with col3:
             st.metric(
                 "Royalties Earned", 
-                f"₹{utils.convert_usd_to_inr(period_total_royalties):,.2f}", 
+                f"₹{period_total_royalties:,.2f}", 
                 f"{royalty_growth:.1f}% {utils.get_performance_indicator(royalty_growth)}"
             )
 
@@ -313,13 +313,13 @@ else:
     - **{selected_book_title}** sold **{period_total_sold:,}** copies in the selected period.
     - The sales performance is **{sales_growth:.1f}%** {sales_growth_indicator} compared to the previous period.
     - The book generates an average of **{avg_daily_sales:.1f}** sales per day.
-    - Total revenue for the period: **₹{utils.convert_usd_to_inr(period_total_revenue):,.2f}**
+    - Total revenue for the period: **₹{period_total_revenue:,.2f}**
     """
 
     # Add royalty information to summary if available
     if 'royalty' in filtered_sales.columns:
         royalty_text = f"""
-    - Total royalties earned: **₹{utils.convert_usd_to_inr(period_total_royalties):,.2f}**
+    - Total royalties earned: **₹{period_total_royalties:,.2f}**
     - Royalty performance is **{royalty_growth:.1f}%** {royalty_growth_indicator} compared to the previous period.
         """
         summary_text += royalty_text

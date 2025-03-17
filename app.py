@@ -77,7 +77,7 @@ else:
             with col1:
                 st.metric("Total Books Sold", f"{total_sales:,}")
             with col2:
-                st.metric("Total Revenue", f"₹{utils.convert_usd_to_inr(total_revenue):,.2f}")
+                st.metric("Total Revenue", f"₹{total_revenue:,.2f}")
             with col3:
                 st.metric("Avg. Daily Sales", f"{avg_daily_sales:.1f}")
             
@@ -123,8 +123,8 @@ else:
                         "date": "Date",
                         "title": "Book Title",
                         "quantity": "Copies Sold",
-                        "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-                        "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f")
+                        "price": st.column_config.NumberColumn("Price", format="₹%.2f"),
+                        "revenue": st.column_config.NumberColumn("Revenue", format="₹%.2f")
                     }
                 )
             else:
