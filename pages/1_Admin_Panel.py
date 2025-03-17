@@ -53,6 +53,8 @@ with tab1:
             client_options = clients['username'].tolist() if not clients.empty else []
             
             owner = st.selectbox("Owner (Client)", client_options)
+            isbn = st.text_input("ISBN", placeholder="e.g., 978-1-234567-89-0")
+            royalty_percentage = st.number_input("Royalty Percentage (%)", min_value=0.0, max_value=100.0, value=10.0, step=0.5)
             price = st.number_input("Price ($)", min_value=0.0, max_value=1000.0, value=19.99, step=0.01)
             publication_date = st.date_input("Publication Date", value=datetime.now())
             
@@ -68,7 +70,9 @@ with tab1:
                         genre=genre,
                         owner=owner,
                         price=price,
-                        publication_date=publication_date.strftime('%Y-%m-%d')
+                        publication_date=publication_date.strftime('%Y-%m-%d'),
+                        isbn=isbn,
+                        royalty_percentage=royalty_percentage
                     )
                     
                     if book_id:
@@ -111,6 +115,14 @@ with tab1:
                     owner_index = client_options.index(selected_book['owner']) if selected_book['owner'] in client_options else 0
                     edit_owner = st.selectbox("Owner (Client)", client_options, index=owner_index)
                     
+                    # Get ISBN value if it exists
+                    isbn_value = selected_book.get('isbn', '')
+                    edit_isbn = st.text_input("ISBN", value=isbn_value, placeholder="e.g., 978-1-234567-89-0")
+                    
+                    # Get royalty percentage if it exists
+                    royalty_value = selected_book.get('royalty_percentage', 10.0)
+                    edit_royalty = st.number_input("Royalty Percentage (%)", min_value=0.0, max_value=100.0, value=float(royalty_value), step=0.5)
+                    
                     edit_price = st.number_input("Price ($)", min_value=0.0, max_value=1000.0, value=float(selected_book['price']), step=0.01)
                     
                     # Parse the publication date
@@ -138,7 +150,9 @@ with tab1:
                                 genre=edit_genre,
                                 owner=edit_owner,
                                 price=edit_price,
-                                publication_date=edit_publication_date.strftime('%Y-%m-%d')
+                                publication_date=edit_publication_date.strftime('%Y-%m-%d'),
+                                isbn=edit_isbn,
+                                royalty_percentage=edit_royalty
                             )
                             
                             if success:
@@ -161,18 +175,28 @@ with tab1:
     
     if not books_df.empty:
         # Display the books in a dataframe
+        # Prepare column configuration
+        column_config = {
+            "id": "ID",
+            "title": "Title",
+            "author": "Author",
+            "genre": "Genre",
+            "owner": "Owner",
+            "price": st.column_config.NumberColumn("Price", format="$%.2f"),
+            "publication_date": "Publication Date"
+        }
+        
+        # Add ISBN and royalty columns if they exist
+        if 'isbn' in books_df.columns:
+            column_config["isbn"] = "ISBN"
+        
+        if 'royalty_percentage' in books_df.columns:
+            column_config["royalty_percentage"] = st.column_config.NumberColumn("Royalty %", format="%.1f%%")
+            
         st.dataframe(
             books_df,
             use_container_width=True,
-            column_config={
-                "id": "ID",
-                "title": "Title",
-                "author": "Author",
-                "genre": "Genre",
-                "owner": "Owner",
-                "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-                "publication_date": "Publication Date"
-            }
+            column_config=column_config
         )
     else:
         st.info("No books available in the system.")

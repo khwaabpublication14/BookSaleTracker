@@ -126,7 +126,7 @@ else:
             revenue_growth = 0
     
     # Display metrics in columns
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
         if comparison != "None":
@@ -149,9 +149,12 @@ else:
             st.metric("Total Revenue", f"${total_revenue:,.2f}")
     
     with col3:
-        st.metric("Unique Books Sold", f"{num_books_sold}")
+        st.metric("Total Royalties", f"${total_royalties:,.2f}")
     
     with col4:
+        st.metric("Unique Books Sold", f"{num_books_sold}")
+    
+    with col5:
         st.metric("Average Sale Price", f"${avg_sale_price:.2f}")
     
     # Sales trend chart
@@ -234,6 +237,28 @@ else:
         else:
             st.info("No genre distribution data available for the selected filters.")
     
+    # Royalties by Book Section
+    st.subheader("Royalties by Book")
+    
+    # Get royalties by book
+    royalties_by_book = data_manager.get_royalties_by_book(username, time_period)
+    
+    if not royalties_by_book.empty:
+        fig = px.bar(
+            royalties_by_book,
+            y='title',
+            x='royalties',
+            title='Royalties Earned by Book',
+            labels={'title': 'Book Title', 'royalties': 'Royalties Earned'},
+            color='royalties',
+            color_continuous_scale=px.colors.sequential.Greens,
+            orientation='h'
+        )
+        fig.update_layout(height=400, yaxis={'categoryorder': 'total ascending'})
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("No royalty data available for the selected filters.")
+    
     # Detailed sales table
     st.subheader("Detailed Sales Data")
     
@@ -241,16 +266,24 @@ else:
         # Sort by date in descending order
         detailed_sales = filtered_data.sort_values('date', ascending=False)
         
+        # Check if royalty column exists
+        display_columns = ['date', 'title', 'quantity', 'price', 'revenue']
+        column_config = {
+            "date": "Date",
+            "title": "Book Title",
+            "quantity": "Copies Sold",
+            "price": st.column_config.NumberColumn("Price", format="$%.2f"),
+            "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f")
+        }
+        
+        if 'royalty' in detailed_sales.columns:
+            display_columns.append('royalty')
+            column_config["royalty"] = st.column_config.NumberColumn("Royalty", format="$%.2f")
+        
         st.dataframe(
-            detailed_sales[['date', 'title', 'quantity', 'price', 'revenue']],
+            detailed_sales[display_columns],
             use_container_width=True,
-            column_config={
-                "date": "Date",
-                "title": "Book Title",
-                "quantity": "Copies Sold",
-                "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-                "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f")
-            }
+            column_config=column_config
         )
         
         # Export option
