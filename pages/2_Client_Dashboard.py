@@ -83,13 +83,13 @@ else:
     num_books_sold = len(filtered_data['book_id'].unique())
     avg_sale_price = total_revenue / total_sales if total_sales > 0 else 0
     total_royalties = filtered_data['royalty'].sum() if 'royalty' in filtered_data.columns else 0
-    
+
     # Calculate comparison metrics if requested
     if comparison != "None":
         # Determine comparison period
         today = datetime.now()
         current_period_days = utils.get_days_in_period(time_period)
-        
+
         if comparison == "Previous Period":
             # Previous period of same length
             prev_end_date = today - timedelta(days=current_period_days)
@@ -98,39 +98,39 @@ else:
             # Same period last year
             prev_start_date = today - timedelta(days=365+current_period_days)
             prev_end_date = today - timedelta(days=365)
-        
+
         # Get all sales data
         all_sales = data_manager.get_user_sales(username)
-        
+
         if not all_sales.empty:
             # Convert date column to datetime if it's not already
             if not isinstance(all_sales['date'].iloc[0], pd.Timestamp):
                 all_sales['date'] = pd.to_datetime(all_sales['date'])
-            
+
             # Filter for previous period
             prev_period_data = all_sales[
                 (all_sales['date'] >= pd.Timestamp(prev_start_date)) & 
                 (all_sales['date'] <= pd.Timestamp(prev_end_date))
             ]
-            
+
             # Apply book filter if needed
             if selected_book != "All Books":
                 prev_period_data = prev_period_data[prev_period_data['title'] == selected_book]
-            
+
             # Calculate previous period metrics
             prev_total_sales = prev_period_data['quantity'].sum() if not prev_period_data.empty else 0
             prev_total_revenue = prev_period_data['revenue'].sum() if not prev_period_data.empty else 0
-            
+
             # Calculate growth rates
             sales_growth = utils.calculate_growth_rate(total_sales, prev_total_sales)
             revenue_growth = utils.calculate_growth_rate(total_revenue, prev_total_revenue)
         else:
             sales_growth = 0
             revenue_growth = 0
-    
+
     # Display metrics in columns
     col1, col2, col3, col4, col5 = st.columns(5)
-    
+
     with col1:
         if comparison != "None":
             st.metric(
@@ -140,7 +140,7 @@ else:
             )
         else:
             st.metric("Total Books Sold", f"{total_sales:,}")
-    
+
     with col2:
         if comparison != "None":
             st.metric(
@@ -150,21 +150,21 @@ else:
             )
         else:
             st.metric("Total Revenue", f"${total_revenue:,.2f}")
-    
+
     with col3:
         st.metric("Total Royalties", f"${total_royalties:,.2f}")
-    
+
     with col4:
         st.metric("Unique Books Sold", f"{num_books_sold}")
-    
+
     with col5:
         st.metric("Average Sale Price", f"${avg_sale_price:.2f}")
-    
+
     # Sales trend chart
     st.subheader("Sales Trend")
-    
+
     sales_trend = data_manager.get_sales_trend(username, time_period)
-    
+
     if not sales_trend.empty and selected_book == "All Books":
         fig = px.line(
             sales_trend, 
@@ -180,10 +180,10 @@ else:
         book_sales = filtered_data.copy()
         if isinstance(book_sales['date'].iloc[0], str):
             book_sales['date'] = pd.to_datetime(book_sales['date'])
-        
+
         book_sales = book_sales.groupby(book_sales['date'].dt.date)['quantity'].sum().reset_index()
         book_sales.columns = ['date', 'sales']
-        
+
         fig = px.line(
             book_sales, 
             x='date', 
@@ -195,16 +195,16 @@ else:
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("No trend data available for the selected filters.")
-    
+
     # Two-column layout for additional charts
     col1, col2 = st.columns(2)
-    
+
     with col1:
         # Top selling books chart
         st.subheader("Top Selling Books")
-        
+
         top_books = data_manager.get_top_books(username, time_period)
-        
+
         if not top_books.empty:
             fig = px.bar(
                 top_books,
@@ -220,13 +220,13 @@ else:
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("No top books data available for the selected filters.")
-    
+
     with col2:
         # Sales by genre chart
         st.subheader("Sales by Genre")
-        
+
         genre_sales = data_manager.get_sales_by_genre(username, time_period)
-        
+
         if not genre_sales.empty:
             fig = px.pie(
                 genre_sales,
@@ -239,18 +239,18 @@ else:
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("No genre distribution data available for the selected filters.")
-    
+
     # Royalties by Book Section
     st.subheader("Royalties by Book")
-    
+
     try:
         # Get royalties by book
         royalties_by_book = data_manager.get_royalties_by_book(username, time_period)
-        
+
         # Check if dataframe contains the necessary columns
         required_cols = ['title', 'royalties']
         has_required_cols = all(col in royalties_by_book.columns for col in required_cols)
-        
+
         if not royalties_by_book.empty and has_required_cols:
             fig = px.bar(
                 royalties_by_book,
@@ -269,34 +269,34 @@ else:
     except Exception as e:
         st.error(f"Error displaying royalties by book: {str(e)}")
         st.info("We're having trouble loading the royalty data. Please try a different filter.")
-    
+
     # Detailed sales table
     st.subheader("Detailed Sales Data")
-    
+
     if not filtered_data.empty:
         # Sort by date in descending order
         detailed_sales = filtered_data.sort_values('date', ascending=False)
-        
+
         # Check if royalty column exists
         display_columns = ['date', 'title', 'quantity', 'price', 'revenue']
         column_config = {
             "date": "Date",
             "title": "Book Title",
             "quantity": "Copies Sold",
-            "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-            "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f")
+            "price": st.column_config.NumberColumn("Price", format="₹%.2f"),
+            "revenue": st.column_config.NumberColumn("Revenue", format="₹%.2f")
         }
-        
+
         if 'royalty' in detailed_sales.columns:
             display_columns.append('royalty')
-            column_config["royalty"] = st.column_config.NumberColumn("Royalty", format="$%.2f")
-        
+            column_config["royalty"] = st.column_config.NumberColumn("Royalty", format="₹%.2f")
+
         st.dataframe(
             detailed_sales[display_columns],
             use_container_width=True,
             column_config=column_config
         )
-        
+
         # Export option
         if st.button("Export to CSV"):
             st.download_button(

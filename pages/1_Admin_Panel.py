@@ -55,7 +55,7 @@ with tab1:
             owner = st.selectbox("Owner (Client)", client_options)
             isbn = st.text_input("ISBN", placeholder="e.g., 978-1-234567-89-0")
             royalty_percentage = st.number_input("Royalty Percentage (%)", min_value=0.0, max_value=100.0, value=10.0, step=0.5)
-            price = st.number_input("Price ($)", min_value=0.0, max_value=1000.0, value=19.99, step=0.01)
+            price = st.number_input("Price (₹)", min_value=0.0, max_value=100000.0, value=1499.99, step=0.01)
             publication_date = st.date_input("Publication Date", value=datetime.now())
 
             submit_button = st.form_submit_button("Add Book")
