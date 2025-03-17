@@ -9,10 +9,14 @@ import auth
 
 # Set page config
 st.set_page_config(
-    page_title="Book Analytics - Book Sales Tracker",
-    page_icon="📚",
+    page_title="Khwaab Publication - Book Analytics",
+    page_icon="attached_assets/logo.png",
     layout="wide"
 )
+
+# Display logo in sidebar
+with st.sidebar:
+    st.image("attached_assets/logo.png", width=200)
 
 # Check authentication
 if not st.session_state.get('authenticated', False):

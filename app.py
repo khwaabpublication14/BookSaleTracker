@@ -10,11 +10,15 @@ import utils
 
 # Configure the page
 st.set_page_config(
-    page_title="Book Sales Tracker",
-    page_icon="📚",
+    page_title="Khwaab Publication - Book Sales Tracker",
+    page_icon="attached_assets/logo.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Display logo in sidebar
+with st.sidebar:
+    st.image("attached_assets/logo.png", width=200)
 
 # Initialize session state
 if 'authenticated' not in st.session_state:
