@@ -39,7 +39,7 @@ if not st.session_state.authenticated:
     auth.show_login_page()
 else:
     # Show the home page with overview dashboard
-    st.title(f"Welcome to Book Sales Tracker, {st.session_state.username}!")
+    st.title(f"Welcome to Khwaab Publication Book Sales Tracker, {st.session_state.username}!")
     
     # Display role-specific information
     if st.session_state.user_role == "admin":
