@@ -75,12 +75,19 @@ with col1:
 with col2:
     st.markdown(f"**Price:** ${selected_book['price']:.2f}")
     st.markdown(f"**Publication Date:** {selected_book['publication_date']}")
+    if 'isbn' in selected_book:
+        st.markdown(f"**ISBN:** {selected_book['isbn']}")
 
 with col3:
     total_sold = book_sales['quantity'].sum()
     total_revenue = book_sales['revenue'].sum()
+    total_royalties = book_sales['royalty'].sum() if 'royalty' in book_sales.columns else 0
     st.markdown(f"**Total Copies Sold:** {total_sold:,}")
     st.markdown(f"**Total Revenue:** ${total_revenue:,.2f}")
+    if 'royalty_percentage' in selected_book:
+        st.markdown(f"**Royalty Rate:** {selected_book['royalty_percentage']}%")
+    if 'royalty' in book_sales.columns:
+        st.markdown(f"**Total Royalties Earned:** ${total_royalties:,.2f}")
 
 # Sales metrics for the selected period
 st.header(f"Sales Metrics ({time_period})")
@@ -91,6 +98,7 @@ else:
     # Calculate metrics for the selected period
     period_total_sold = filtered_sales['quantity'].sum()
     period_total_revenue = filtered_sales['revenue'].sum()
+    period_total_royalties = filtered_sales['royalty'].sum() if 'royalty' in filtered_sales.columns else 0
     
     # Calculate previous period metrics for comparison
     current_period_days = utils.get_days_in_period(time_period)
@@ -113,13 +121,18 @@ else:
     # Calculate metrics for previous period
     prev_period_sold = prev_period_sales['quantity'].sum() if not prev_period_sales.empty else 0
     prev_period_revenue = prev_period_sales['revenue'].sum() if not prev_period_sales.empty else 0
+    prev_period_royalties = prev_period_sales['royalty'].sum() if not prev_period_sales.empty and 'royalty' in prev_period_sales.columns else 0
     
     # Calculate growth rates
     sales_growth = utils.calculate_growth_rate(period_total_sold, prev_period_sold)
     revenue_growth = utils.calculate_growth_rate(period_total_revenue, prev_period_revenue)
+    royalty_growth = utils.calculate_growth_rate(period_total_royalties, prev_period_royalties) if 'royalty' in filtered_sales.columns else 0
     
     # Display metrics in columns
-    col1, col2, col3, col4 = st.columns(4)
+    if 'royalty' in filtered_sales.columns:
+        col1, col2, col3, col4, col5 = st.columns(5)
+    else:
+        col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric(
@@ -135,13 +148,29 @@ else:
             f"{revenue_growth:.1f}% {utils.get_performance_indicator(revenue_growth)}"
         )
     
-    with col3:
-        avg_daily_sales = period_total_sold / current_period_days
-        st.metric("Avg. Daily Sales", f"{avg_daily_sales:.1f}")
-    
-    with col4:
-        avg_price = period_total_revenue / period_total_sold if period_total_sold > 0 else 0
-        st.metric("Avg. Sale Price", f"${avg_price:.2f}")
+    if 'royalty' in filtered_sales.columns:
+        with col3:
+            st.metric(
+                "Royalties Earned", 
+                f"${period_total_royalties:,.2f}", 
+                f"{royalty_growth:.1f}% {utils.get_performance_indicator(royalty_growth)}"
+            )
+        
+        with col4:
+            avg_daily_sales = period_total_sold / current_period_days
+            st.metric("Avg. Daily Sales", f"{avg_daily_sales:.1f}")
+        
+        with col5:
+            avg_price = period_total_revenue / period_total_sold if period_total_sold > 0 else 0
+            st.metric("Avg. Sale Price", f"${avg_price:.2f}")
+    else:
+        with col3:
+            avg_daily_sales = period_total_sold / current_period_days
+            st.metric("Avg. Daily Sales", f"{avg_daily_sales:.1f}")
+        
+        with col4:
+            avg_price = period_total_revenue / period_total_sold if period_total_sold > 0 else 0
+            st.metric("Avg. Sale Price", f"${avg_price:.2f}")
     
     # Sales trend chart
     st.subheader("Sales Trend")
@@ -230,15 +259,24 @@ else:
     # Sort by date in descending order
     detailed_sales = filtered_sales.sort_values('date', ascending=False)
     
+    # Prepare display columns and configuration
+    display_columns = ['date', 'quantity', 'price', 'revenue']
+    column_config = {
+        "date": "Date",
+        "quantity": "Copies Sold",
+        "price": st.column_config.NumberColumn("Price", format="$%.2f"),
+        "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f")
+    }
+    
+    # Add royalty column if it exists
+    if 'royalty' in detailed_sales.columns:
+        display_columns.append('royalty')
+        column_config["royalty"] = st.column_config.NumberColumn("Royalty", format="$%.2f")
+    
     st.dataframe(
-        detailed_sales[['date', 'quantity', 'price', 'revenue']],
+        detailed_sales[display_columns],
         use_container_width=True,
-        column_config={
-            "date": "Date",
-            "quantity": "Copies Sold",
-            "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-            "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f")
-        }
+        column_config=column_config
     )
     
     # Export option
@@ -258,6 +296,15 @@ else:
     sales_growth_indicator = utils.get_performance_indicator(sales_growth)
     sales_growth_color = utils.get_performance_color(sales_growth)
     
+    # Calculate royalty metrics if available - this was moved earlier in the code
+    royalty_growth = 0
+    royalty_growth_indicator = ""
+    
+    if 'royalty' in filtered_sales.columns:
+        # Period total royalties is already calculated earlier
+        # Just prepare the indicator here to fix LSP issues
+        royalty_growth_indicator = utils.get_performance_indicator(royalty_growth)
+    
     # Display performance summary
     summary_text = f"""
     - **{selected_book_title}** sold **{period_total_sold:,}** copies in the selected period.
@@ -265,6 +312,14 @@ else:
     - The book generates an average of **{avg_daily_sales:.1f}** sales per day.
     - Total revenue for the period: **${period_total_revenue:,.2f}**
     """
+    
+    # Add royalty information to summary if available
+    if 'royalty' in filtered_sales.columns:
+        royalty_text = f"""
+    - Total royalties earned: **${period_total_royalties:,.2f}**
+    - Royalty performance is **{royalty_growth:.1f}%** {royalty_growth_indicator} compared to the previous period.
+        """
+        summary_text += royalty_text
     
     st.markdown(summary_text)
     
