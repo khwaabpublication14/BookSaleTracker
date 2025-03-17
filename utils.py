@@ -4,6 +4,15 @@ from datetime import datetime, timedelta
 import os
 import io
 
+# USD to INR conversion rate (example rate, should be updated regularly in production)
+USD_TO_INR_RATE = 83.0
+
+def convert_usd_to_inr(usd_amount):
+    """Convert USD amount to INR."""
+    return usd_amount * USD_TO_INR_RATE
+
+
+
 def get_days_in_period(time_period):
     """Return the number of days in the selected time period."""
     if time_period == "Last 7 Days":
