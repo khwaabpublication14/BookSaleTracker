@@ -27,6 +27,8 @@ if 'first_load' not in st.session_state:
     st.session_state.first_load = True
     # Initialize the data on first load
     data_manager.initialize_data()
+    # Update sales data with royalty calculations if needed
+    data_manager.update_sales_royalties()
 
 # Authentication
 if not st.session_state.authenticated:

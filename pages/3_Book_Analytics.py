@@ -19,6 +19,9 @@ if not st.session_state.get('authenticated', False):
     st.warning("Please log in to access this page.")
     st.stop()
 
+# Ensure royalty data is updated
+data_manager.update_sales_royalties()
+
 # Display user info in sidebar
 auth.show_user_info()
 
