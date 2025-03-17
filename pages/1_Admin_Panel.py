@@ -266,17 +266,26 @@ with tab2:
             # Display the most recent sales
             recent_sales = sales_df.sort_values('date', ascending=False).head(10)
             
+            # Select columns to display
+            display_columns = ['date', 'title', 'quantity', 'price', 'revenue', 'owner']
+            column_config = {
+                "date": "Date",
+                "title": "Book Title",
+                "quantity": "Quantity",
+                "price": st.column_config.NumberColumn("Price", format="$%.2f"),
+                "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f"),
+                "owner": "Client"
+            }
+            
+            # Add royalty column if it exists
+            if 'royalty' in recent_sales.columns:
+                display_columns.append('royalty')
+                column_config["royalty"] = st.column_config.NumberColumn("Royalty", format="$%.2f")
+            
             st.dataframe(
-                recent_sales[['date', 'title', 'quantity', 'price', 'revenue', 'owner']],
+                recent_sales[display_columns],
                 use_container_width=True,
-                column_config={
-                    "date": "Date",
-                    "title": "Book Title",
-                    "quantity": "Quantity",
-                    "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-                    "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f"),
-                    "owner": "Client"
-                }
+                column_config=column_config
             )
     
     # Sales filtering and display
@@ -336,17 +345,26 @@ with tab2:
         
         # Display filtered sales data
         if not sales_df.empty:
+            # Select columns to display
+            display_columns = ['date', 'title', 'quantity', 'price', 'revenue', 'owner']
+            column_config = {
+                "date": "Date",
+                "title": "Book Title",
+                "quantity": "Quantity",
+                "price": st.column_config.NumberColumn("Price", format="$%.2f"),
+                "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f"),
+                "owner": "Client"
+            }
+            
+            # Add royalty column if it exists
+            if 'royalty' in sales_df.columns:
+                display_columns.append('royalty')
+                column_config["royalty"] = st.column_config.NumberColumn("Royalty", format="$%.2f")
+            
             st.dataframe(
-                sales_df[['date', 'title', 'quantity', 'price', 'revenue', 'owner']],
+                sales_df[display_columns],
                 use_container_width=True,
-                column_config={
-                    "date": "Date",
-                    "title": "Book Title",
-                    "quantity": "Quantity",
-                    "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-                    "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f"),
-                    "owner": "Client"
-                }
+                column_config=column_config
             )
             
             # Display summary statistics
@@ -530,17 +548,27 @@ with tab3:
                 if client_books.empty:
                     st.info(f"No books assigned to {selected_client}.")
                 else:
+                    # Prepare column configuration
+                    column_config = {
+                        "id": "ID",
+                        "title": "Title",
+                        "author": "Author",
+                        "genre": "Genre",
+                        "price": st.column_config.NumberColumn("Price", format="$%.2f"),
+                        "publication_date": "Publication Date"
+                    }
+                    
+                    # Add ISBN and royalty columns if they exist
+                    if 'isbn' in client_books.columns:
+                        column_config["isbn"] = "ISBN"
+                    
+                    if 'royalty_percentage' in client_books.columns:
+                        column_config["royalty_percentage"] = st.column_config.NumberColumn("Royalty %", format="%.1f%%")
+                    
                     st.dataframe(
                         client_books,
                         use_container_width=True,
-                        column_config={
-                            "id": "ID",
-                            "title": "Title",
-                            "author": "Author",
-                            "genre": "Genre",
-                            "price": st.column_config.NumberColumn("Price", format="$%.2f"),
-                            "publication_date": "Publication Date"
-                        }
+                        column_config=column_config
                     )
                     
                     # User sales summary
