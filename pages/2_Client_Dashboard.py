@@ -145,20 +145,20 @@ else:
         if comparison != "None":
             st.metric(
                 "Total Revenue", 
-                f"${total_revenue:,.2f}", 
+                f"₹{total_revenue:,.2f}", 
                 f"{revenue_growth:.1f}% {utils.get_performance_indicator(revenue_growth)}"
             )
         else:
-            st.metric("Total Revenue", f"${total_revenue:,.2f}")
+            st.metric("Total Revenue", f"₹{total_revenue:,.2f}")
 
     with col3:
-        st.metric("Total Royalties", f"${total_royalties:,.2f}")
+        st.metric("Total Royalties", f"₹{total_royalties:,.2f}")
 
     with col4:
         st.metric("Unique Books Sold", f"{num_books_sold}")
 
     with col5:
-        st.metric("Average Sale Price", f"${avg_sale_price:.2f}")
+        st.metric("Average Sale Price", f"₹{avg_sale_price:.2f}")
 
     # Sales trend chart
     st.subheader("Sales Trend")
