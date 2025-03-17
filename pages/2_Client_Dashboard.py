@@ -79,6 +79,7 @@ else:
     total_revenue = filtered_data['revenue'].sum()
     num_books_sold = len(filtered_data['book_id'].unique())
     avg_sale_price = total_revenue / total_sales if total_sales > 0 else 0
+    total_royalties = filtered_data['royalty'].sum() if 'royalty' in filtered_data.columns else 0
     
     # Calculate comparison metrics if requested
     if comparison != "None":

@@ -42,6 +42,20 @@ def initialize_data():
                 'client2',
                 'client2'
             ],
+            'isbn': [
+                '978-1-234567-89-0',
+                '978-1-234567-90-6',
+                '978-1-234567-91-3',
+                '978-1-234567-92-0',
+                '978-1-234567-93-7'
+            ],
+            'royalty_percentage': [
+                15.0,
+                12.5,
+                10.0,
+                12.0,
+                14.0
+            ],
             'price': [
                 29.99,
                 24.99,
@@ -82,12 +96,24 @@ def initialize_data():
             # Random quantity between 1 and 10
             quantity = np.random.randint(1, 11)
             
+            # Calculate revenue and royalty
+            price = book_row['price']
+            revenue = quantity * price
+            
+            # Get royalty percentage (default to 10% if not available)
+            royalty_percentage = 10.0
+            if 'royalty_percentage' in book_row:
+                royalty_percentage = book_row['royalty_percentage']
+            
+            royalty = revenue * (royalty_percentage / 100)
+            
             sales_data.append({
                 'date': sale_date,
                 'book_id': book_id,
                 'quantity': quantity,
-                'price': book_row['price'],
-                'revenue': quantity * book_row['price']
+                'price': price,
+                'revenue': revenue,
+                'royalty': royalty
             })
         
         sales_df = pd.DataFrame(sales_data)
@@ -118,7 +144,7 @@ def get_sales():
         return pd.read_csv('data/sales.csv')
     return pd.DataFrame()
 
-def add_book(title, author, genre, owner, price, publication_date):
+def add_book(title, author, genre, owner, price, publication_date, isbn='', royalty_percentage=10.0):
     """Add a new book to the dataset."""
     books_df = get_books()
     
@@ -135,6 +161,8 @@ def add_book(title, author, genre, owner, price, publication_date):
         'author': [author],
         'genre': [genre],
         'owner': [owner],
+        'isbn': [isbn],
+        'royalty_percentage': [royalty_percentage],
         'price': [price],
         'publication_date': [publication_date]
     })
@@ -145,7 +173,7 @@ def add_book(title, author, genre, owner, price, publication_date):
     
     return new_id
 
-def update_book(book_id, title, author, genre, owner, price, publication_date):
+def update_book(book_id, title, author, genre, owner, price, publication_date, isbn=None, royalty_percentage=None):
     """Update an existing book in the dataset."""
     books_df = get_books()
     
@@ -165,6 +193,13 @@ def update_book(book_id, title, author, genre, owner, price, publication_date):
     books_df.loc[book_index, 'owner'] = owner
     books_df.loc[book_index, 'price'] = price
     books_df.loc[book_index, 'publication_date'] = publication_date
+    
+    # Update ISBN and royalty if provided
+    if isbn is not None and 'isbn' in books_df.columns:
+        books_df.loc[book_index, 'isbn'] = isbn
+        
+    if royalty_percentage is not None and 'royalty_percentage' in books_df.columns:
+        books_df.loc[book_index, 'royalty_percentage'] = royalty_percentage
     
     books_df.to_csv('data/books.csv', index=False)
     
@@ -207,8 +242,14 @@ def add_sale(book_id, date, quantity, price=None):
     if price is None:
         price = book.iloc[0]['price']
     
-    # Calculate revenue
+    # Get royalty percentage (default to 10% if not available)
+    royalty_percentage = 10.0
+    if 'royalty_percentage' in book.columns:
+        royalty_percentage = book.iloc[0]['royalty_percentage']
+    
+    # Calculate revenue and royalty
     revenue = quantity * price
+    royalty = revenue * (royalty_percentage / 100)
     
     # Create new sale entry
     new_sale = pd.DataFrame({
@@ -216,7 +257,8 @@ def add_sale(book_id, date, quantity, price=None):
         'book_id': [book_id],
         'quantity': [quantity],
         'price': [price],
-        'revenue': [revenue]
+        'revenue': [revenue],
+        'royalty': [royalty]
     })
     
     # Append to existing sales
@@ -359,6 +401,39 @@ def get_sales_by_genre(username, time_period):
     sales_by_genre = sales_by_genre.sort_values('sales', ascending=False)
     
     return sales_by_genre
+
+def get_total_royalties(username, time_period="All Time"):
+    """Get total royalties earned for the given time period."""
+    sales_df = filter_sales_by_time_period(username, time_period)
+    
+    if sales_df.empty or 'royalty' not in sales_df.columns:
+        return 0.0
+    
+    # Sum all royalties
+    total_royalties = sales_df['royalty'].sum()
+    
+    return total_royalties
+
+def get_royalties_by_book(username, time_period="All Time"):
+    """Get royalties earned by book for the given time period."""
+    sales_df = filter_sales_by_time_period(username, time_period)
+    books_df = get_books()
+    
+    if sales_df.empty or books_df.empty or 'royalty' not in sales_df.columns:
+        return pd.DataFrame(columns=['title', 'royalties'])
+    
+    # Merge sales with books to get book titles
+    merged_df = pd.merge(sales_df, books_df[['id', 'title']], 
+                         left_on='book_id', right_on='id')
+    
+    # Group by book title and sum royalties
+    royalties_by_book = merged_df.groupby('title')['royalty'].sum().reset_index()
+    royalties_by_book.columns = ['title', 'royalties']
+    
+    # Sort by royalties in descending order
+    royalties_by_book = royalties_by_book.sort_values('royalties', ascending=False)
+    
+    return royalties_by_book
 
 def get_users():
     """Get all users from the dataset."""
