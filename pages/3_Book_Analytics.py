@@ -165,7 +165,7 @@ else:
 
         with col5:
             avg_price = period_total_revenue / period_total_sold if period_total_sold > 0 else 0
-            st.metric("Avg. Sale Price", f"₹{utils.convert_usd_to_inr(avg_price):.2f}")
+            st.metric("Avg. Sale Price", f"₹{avg_price:.2f}")
     else:
         with col3:
             avg_daily_sales = period_total_sold / current_period_days
@@ -173,7 +173,7 @@ else:
 
         with col4:
             avg_price = period_total_revenue / period_total_sold if period_total_sold > 0 else 0
-            st.metric("Avg. Sale Price", f"₹{utils.convert_usd_to_inr(avg_price):.2f}")
+            st.metric("Avg. Sale Price", f"₹{avg_price:.2f}")
 
     # Sales trend chart
     st.subheader("Sales Trend")
