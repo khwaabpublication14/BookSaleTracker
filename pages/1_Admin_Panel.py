@@ -123,7 +123,7 @@ with tab1:
                     royalty_value = selected_book.get('royalty_percentage', 10.0)
                     edit_royalty = st.number_input("Royalty Percentage (%)", min_value=0.0, max_value=100.0, value=float(royalty_value), step=0.5)
 
-                    edit_price = st.number_input("Price ($)", min_value=0.0, max_value=1000.0, value=float(selected_book['price']), step=0.01)
+                    edit_price = st.number_input("Price (₹)", min_value=0.0, max_value=10000.0, value=float(selected_book['price']), step=0.01)
 
                     # Parse the publication date
                     try:
