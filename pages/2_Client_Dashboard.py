@@ -176,10 +176,9 @@ else:
         fig.update_layout(height=400)
         st.plotly_chart(fig, use_container_width=True)
     elif not filtered_data.empty and selected_book != "All Books":
-        # Group by date for the specific book
+        # Create a clean copy and ensure date is datetime
         book_sales = filtered_data.copy()
-        if isinstance(book_sales['date'].iloc[0], str):
-            book_sales['date'] = pd.to_datetime(book_sales['date'])
+        book_sales.loc[:, 'date'] = pd.to_datetime(book_sales['date'])
 
         book_sales = book_sales.groupby(book_sales['date'].dt.date)['quantity'].sum().reset_index()
         book_sales.columns = ['date', 'sales']

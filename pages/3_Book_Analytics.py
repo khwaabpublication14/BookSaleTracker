@@ -214,11 +214,12 @@ else:
         # Monthly distribution
         st.subheader("Monthly Sales Distribution")
 
-        # Extract month from date and group by month
-        filtered_sales['month'] = filtered_sales['date'].dt.strftime('%b')
-        filtered_sales['month_num'] = filtered_sales['date'].dt.month
+        # Create a copy to avoid SettingWithCopyWarning
+        sales_analysis = filtered_sales.copy()
+        sales_analysis['month'] = sales_analysis['date'].dt.strftime('%b')
+        sales_analysis['month_num'] = sales_analysis['date'].dt.month
 
-        monthly_sales = filtered_sales.groupby(['month', 'month_num'])['quantity'].sum().reset_index()
+        monthly_sales = sales_analysis.groupby(['month', 'month_num'])['quantity'].sum().reset_index()
         monthly_sales = monthly_sales.sort_values('month_num')
 
         fig = px.bar(
@@ -237,11 +238,12 @@ else:
         # Day of week distribution
         st.subheader("Day of Week Sales Distribution")
 
-        # Extract day of week from date and group by day
-        filtered_sales['day'] = filtered_sales['date'].dt.day_name()
-        filtered_sales['day_num'] = filtered_sales['date'].dt.dayofweek
+        # Create a copy for day analysis
+        day_analysis = filtered_sales.copy()
+        day_analysis['day'] = day_analysis['date'].dt.day_name()
+        day_analysis['day_num'] = day_analysis['date'].dt.dayofweek
 
-        daily_sales = filtered_sales.groupby(['day', 'day_num'])['quantity'].sum().reset_index()
+        daily_sales = day_analysis.groupby(['day', 'day_num'])['quantity'].sum().reset_index()
         daily_sales = daily_sales.sort_values('day_num')
 
         fig = px.bar(
